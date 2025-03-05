@@ -1,7 +1,9 @@
-from textnode import *
+from textnode import TextNode, TextType
+from htmlnode import HtmlNode
 
 def main():
-	test = TextNode("This is some anchor text", TextType.LINK, "https://www.boot.dev")
-	print(repr(test))
+	test = HtmlNode("a", "This is text", ["node", "node1"], {"href": "https://www.google.com", "target": "_blank"})
+	print(test.props_to_html())
 
-main()	
+if __name__ == "__main__":
+	main()	
