@@ -1,19 +1,34 @@
 import unittest
-from inline_markdown import split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link
+from inline_markdown import split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link, text_to_textnodes
 from textnode import TextNode, TextType
 
 class SplitNodesDelimiter(unittest.TestCase):
-	def test(self):
-		node = TextNode("This is text with a `code block` word", TextType.TEXT)
-		new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
+	def test_split_nodes_delimiter_code(self):
+		matches = split_nodes_delimiter([TextNode("This is text with a `code block` word", TextType.TEXT)], "`", TextType.CODE)
 		expected = [
-			[
-			    TextNode("This is text with a ", TextType.TEXT),
-			    TextNode("code block", TextType.CODE),
-			    TextNode(" word", TextType.TEXT),
-			],
+		    TextNode("This is text with a ", TextType.TEXT),
+		    TextNode("code block", TextType.CODE),
+		    TextNode(" word", TextType.TEXT),
 		]
-		self.assertEqual(new_nodes, expected)
+		self.assertEqual(matches, expected)
+
+	def test_split_nodes_delimiter_code(self):
+		matches = split_nodes_delimiter([TextNode("This is text with a _italic_ word", TextType.TEXT)], "_", TextType.ITALIC)
+		expected = [
+		    TextNode("This is text with a ", TextType.TEXT),
+		    TextNode("italic", TextType.ITALIC),
+		    TextNode(" word", TextType.TEXT),
+		]
+		self.assertEqual(matches, expected)
+
+	def test_split_nodes_delimiter_code(self):
+		matches = split_nodes_delimiter([TextNode("This is text with a **bold** word", TextType.TEXT)], "**", TextType.BOLD)
+		expected = [
+		    TextNode("This is text with a ", TextType.TEXT),
+		    TextNode("bold", TextType.BOLD),
+		    TextNode(" word", TextType.TEXT),
+		]
+		self.assertEqual(matches, expected)
 
 class ExtractMarkdown(unittest.TestCase):
 	def test_extract_markdown_images(self):
@@ -100,6 +115,22 @@ class ExtractMarkdown(unittest.TestCase):
 			TextNode(" and ", TextType.TEXT, None),
 			TextNode("to youtube", TextType.LINK, "https://www.youtube.com/@bootdotdev")
 		]
+		self.assertListEqual(matches, expected)
+
+	def test_text_to_textnodes(self):
+		matches = text_to_textnodes("This is **text** with an _italic_ word and a `code block` and an ![image](https://i.imgur.com/zjjcJKZ.png) and a [link](https://boot.dev)")
+		expected = [
+			TextNode("This is ", TextType.TEXT),
+			TextNode("text", TextType.BOLD),
+			TextNode(" with an ", TextType.TEXT),
+			TextNode("italic", TextType.ITALIC),
+			TextNode(" word and a ", TextType.TEXT),
+			TextNode("code block", TextType.CODE),
+			TextNode(" and an ", TextType.TEXT),
+			TextNode("image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png"),
+			TextNode(" and a ", TextType.TEXT),
+			TextNode("link", TextType.LINK, "https://boot.dev"),
+		]	
 		self.assertListEqual(matches, expected)
 
 if __name__ == "__main__":

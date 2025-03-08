@@ -4,17 +4,22 @@ import re
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
 	new_nodes = []
 	for old_node in old_nodes:
+		old_text = old_node.text
 		if old_node.text_type != TextType.TEXT:
 			new_nodes.append(old_node)
 			continue
 		split_nodes = []
-		split_text = (old_node.text).split(delimiter)
+		split_text = old_text.split(delimiter)
 		if len(split_text) % 2 == 0:
-			raise ValueError("invalid markdown, formatted section not closed")	 
-		split_nodes.append(TextNode(split_text[0], TextType.TEXT))
-		split_nodes.append(TextNode(split_text[1], text_type))
-		split_nodes.append(TextNode(split_text[2], TextType.TEXT))
-		new_nodes.append(split_nodes)
+			raise ValueError("invalid markdown, formatted section not closed")
+		for i in range(len(split_text)):
+			if split_text[i] == "":
+				continue
+			if i % 2 == 0:
+				split_nodes.append(TextNode(split_text[i], TextType.TEXT))
+			else:
+				split_nodes.append(TextNode(split_text[i], text_type))
+		new_nodes.extend(split_nodes)
 	return new_nodes
 
 def extract_markdown_images(text):
@@ -74,3 +79,12 @@ def split_nodes_link(old_nodes):
 		if old_text != "":
 			new_nodes.append(TextNode(old_text, TextType.TEXT))
 	return new_nodes
+
+def text_to_textnodes(text):
+	nodes = [TextNode(text, TextType.TEXT)]
+	nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+	nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)
+	nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
+	nodes = split_nodes_image(nodes)
+	nodes = split_nodes_link(nodes)
+	return nodes
