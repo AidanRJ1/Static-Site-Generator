@@ -70,9 +70,9 @@ def main():
 		BASEPATH = sys.argv[1]
 	else:
 		BASEPATH = "/"
-	copy_to_directory("./static", "./public")
+	copy_to_directory("./static", "./docs")
 	#generate_page("content/index.md", "template.html", "public/index.html")
-	generate_pages_recursive("./content", "./template.html", "./public", BASEPATH)
+	generate_pages_recursive("./content", "./template.html", "./docs", BASEPATH)
 
 if __name__ == "__main__":
 	main()	
