@@ -58,8 +58,13 @@ def heading_to_html_node(heading):
 	return LeafNode(f"h{count}", heading[count + 1:])
 
 def code_block_to_html_node(code_block):
-	html_node = LeafNode("code", repr(code_block.strip("```").lstrip("\n")).strip("'"))
-	return ParentNode("pre", [html_node])
+	#html_node = LeafNode("code", repr(code_block.strip("```").lstrip("\n")).strip("'"))
+	#return ParentNode("pre", [html_node])
+	text = code_block.strip("```").lstrip("\n")
+	raw_text_node = TextNode(text, TextType.TEXT)
+	child = text_node_to_html_node(raw_text_node)
+	code = ParentNode("code", [child])
+	return ParentNode("pre", [code])
 
 def quote_block_to_html_node(quote_block):
 	new_block = []
