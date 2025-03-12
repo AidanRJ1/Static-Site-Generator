@@ -2,7 +2,7 @@ from textnode import TextNode, TextType, text_node_to_html_node
 from htmlnode import HtmlNode, LeafNode, ParentNode
 from inline_markdown import split_nodes_image, split_nodes_link, extract_markdown_links, text_to_textnodes
 from block_markdown import markdown_to_blocks, block_to_block_type, BlockType, markdown_to_html_node
-import os, shutil
+import os, shutil, sys
 
 def copy_to_directory(src, dst):
 	if os.path.exists(dst):
@@ -30,7 +30,7 @@ def extract_title(markdown):
 		else:
 			raise Exception("No h1 header exists")
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, BASEPATH):
 	directories = os.path.dirname(dest_path)
 	print(f"Generating page from {from_path} to {dest_path} using {template_path}")
 	print(f"Reading '{from_path}'")
@@ -44,7 +44,7 @@ def generate_page(from_path, template_path, dest_path):
 	print(f"Reading '{template_path}'")
 	with open(template_path, "r") as file:
 		template = file.read()
-	edited_template = template.replace("{{ Title }}", title).replace("{{ Content }}", html)
+	edited_template = template.replace("{{ Title }}", title).replace("{{ Content }}", html).replace('href="/', f'href="{BASEPATH}').replace('src="/', f'src="{BASEPATH}')
 	if not os.path.exists(directories):
 		print(f"Making {directories}")
 		os.makedirs(directories)
@@ -52,23 +52,27 @@ def generate_page(from_path, template_path, dest_path):
 	with open(dest_path, "w") as file:
 		file.write(edited_template)
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, BASEPATH):
 	src_contents = os.listdir(dir_path_content)
 	for file in src_contents:
 		if os.path.isfile(f"{dir_path_content}/{file}"):
-			generate_page(f"{dir_path_content}/{file}", template_path, f"{dest_dir_path}/index.html")
+			generate_page(f"{dir_path_content}/{file}", template_path, f"{dest_dir_path}/index.html", BASEPATH)
 			#print(f"Is File - Src: {dir_path_content}/{file} Dst: {dest_dir_path}/index.html")
 			continue
 		else:
 			#print(f"Is Directory - Src: {dir_path_content}/{file} Dst:{dest_dir_path}/{file}")
-			generate_pages_recursive(f"{dir_path_content}/{file}", template_path, f"{dest_dir_path}/{file}")
+			generate_pages_recursive(f"{dir_path_content}/{file}", template_path, f"{dest_dir_path}/{file}", BASEPATH)
 			
 	return
 
 def main():
+	if sys.argv[1]:
+		BASEPATH = sys.argv[1]
+	else:
+		BASEPATH = "/"
 	copy_to_directory("./static", "./public")
 	#generate_page("content/index.md", "template.html", "public/index.html")
-	generate_pages_recursive("./content", "./template.html", "./public")
+	generate_pages_recursive("./content", "./template.html", "./public", BASEPATH)
 
 if __name__ == "__main__":
 	main()	
